@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<config>
+  <connectors>
+    <connector>
+      <name>fabrikam.org all</name>
+      <connector>Source Fabrikam</connector>
+      <root>OU=Fabrikam,DC=fabrikam,DC=org</root>
+    </connector>
+    <connector>
+      <name>contoso.com all</name>
+      <connector>Destination Contoso</connector>
+      <root>OU=Contoso,DC=contoso,DC=com</root>
+      <target>true</target>
+    </connector>
+  </connectors>
+  <import>
+    <attributes>
+      <attribute>
+        <name>distinguishedName</name>
+        <type>replace</type>
+        <!-- <value>___</value> -->
+        <!-- <simplevalue>___</value> -->
+        <domainroot>true</domainroot>
+        <newvalue>%ROOT%</newvalue>
+      </attribute>
+    </attributes>
+  </import>
+</config>
