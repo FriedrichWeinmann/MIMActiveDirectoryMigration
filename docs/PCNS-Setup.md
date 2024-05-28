@@ -10,7 +10,7 @@
 To add all users in an OU structure to a group, run something like this:
 
 ```powershell
-Get-ADUser -Filter * -SearchBase 'OU=Kunden,DC=contoso,DC=com' | Add-ADPrincipalGroupMembership -MemberOf MIMPwdReplicated
+Get-ADUser -Filter * -SearchBase 'OU=Customers,DC=contoso,DC=com' | Add-ADPrincipalGroupMembership -MemberOf MIMPwdReplicated
 ```
 
 ## Setup
