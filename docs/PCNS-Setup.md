@@ -2,8 +2,16 @@
 
 ## Prerequisites
 
-+ Create group in source domain (e.g.: XXX)
++ Create group in source domain (e.g.: MIMPwdReplicated)
 + Add SPN to MIM Service Account: PCNS/MIMServiceAccount.fabrikam.org
+
+> Note: Adding all users under an OU to a group
+
+To add all users in an OU structure to a group, run something like this:
+
+```powershell
+Get-ADUser -Filter * -SearchBase 'OU=Kunden,DC=contoso,DC=com' | Add-ADPrincipalGroupMembership -MemberOf MIMPwdReplicated
+```
 
 ## Setup
 
