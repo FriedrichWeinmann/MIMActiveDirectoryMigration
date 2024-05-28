@@ -16,6 +16,7 @@
   <import>
     <attributes>
       <attribute>
+        <sourcename>DN</sourcename>
         <name>distinguishedName</name>
         <type>replace</type>
         <!-- <value>___</value> -->

@@ -11,7 +11,6 @@ namespace Mms_Metaverse
 {
     public class MAExtensionObject : IMASynchronization
     {
-        private Utility _Util = new Utility();
         private SolutionConfiguration _SolutionConfiguration;
 
         public MAExtensionObject()
@@ -82,7 +81,7 @@ namespace Mms_Metaverse
         {
             Logging.Log(new string('=', 60));
             Logging.Log("MA extension [Initialize] started", loggingLevel: 3);
-            _Util.LogDllInfos(System.Reflection.Assembly.GetExecutingAssembly());
+            Utility.LogDllInfos(System.Reflection.Assembly.GetExecutingAssembly());
             try { _SolutionConfiguration = new SolutionConfiguration(); }
             catch (Exception e)
             {
@@ -94,7 +93,7 @@ namespace Mms_Metaverse
 
         void IMASynchronization.MapAttributesForImport(string FlowRuleName, CSEntry csentry, MVEntry mventry)
         {
-            Logging.Log($"MA extension: MapAttributesForImport - FlowRuleName: {FlowRuleName} | CSE: {csentry} | MVE: {mventry}", true, 4);
+            Logging.Log($"MA extension: MapAttributesForImport - FlowRuleName: {FlowRuleName} | CSE: {csentry} | MVE: {mventry}", true, 3);
             ConnectorConfig config = _SolutionConfiguration.ConnectorsByConnectorName[csentry.MA.Name];
 
             if (config == null)
@@ -103,13 +102,20 @@ namespace Mms_Metaverse
                 return;
             }
 
-            if (config.Target)
-                foreach (ConverterBase converter in _SolutionConfiguration.ConverterExportByAttribute.Values)
-                    converter.Convert(mventry, csentry, config);
-            else
-                foreach (ConverterBase converter in _SolutionConfiguration.ConverterImportByAttribute.Values)
-                    converter.Convert(mventry, csentry, config);
+            try
+            {
+                if (config.Target)
+                    foreach (ConverterBase converter in _SolutionConfiguration.ConverterExportByAttribute.Values)
+                        converter.Convert(mventry, csentry, config);
+                else
+                    foreach (ConverterBase converter in _SolutionConfiguration.ConverterImportByAttribute.Values)
+                        converter.Convert(mventry, csentry, config);
+            }
+            catch (Exception e)
+            {
+                Utility.LogExceptionDetails(e);
+                throw e;
+            }
         }
-
     }
 }

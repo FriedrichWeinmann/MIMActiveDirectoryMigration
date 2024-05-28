@@ -20,12 +20,15 @@ namespace Mms_Metaverse.Config
         {
             this.Direction = Direction;
 
-            foreach (XmlElement child in Configuration.ChildNodes)
+            foreach (XmlNode child in Configuration.ChildNodes)
             {
                 switch (child.Name.ToLower())
                 {
                     case "name":
                         Attribute = child.InnerText;
+                        break;
+                    case "sourcename":
+                        SourceAttribute = child.InnerText;
                         break;
                     case "domainroot":
                         UseDomainRoot = String.Equals("true", child.InnerText, StringComparison.OrdinalIgnoreCase);
@@ -43,6 +46,8 @@ namespace Mms_Metaverse.Config
                         break;
                 }
             }
+            if (String.IsNullOrEmpty(SourceAttribute))
+                SourceAttribute = Attribute;
             if (Direction == Direction.Export)
                 if (String.IsNullOrEmpty(Value) || (String.IsNullOrEmpty(NewValue) && !UseDomainRoot))
                     throw new ArgumentException($"Not all required settings (Value or SimpleValue and either Value or DomainRoot) found in element! {Configuration.InnerXml}");
@@ -55,9 +60,12 @@ namespace Mms_Metaverse.Config
         {
             string inputValue;
             if (Direction == Direction.Export)
-                inputValue = mventry[Attribute].Value;
+                inputValue = mventry[SourceAttribute].Value;
             else
-                inputValue = csentry[Attribute].Value;
+                if (SourceAttribute == "DN")
+                    inputValue = csentry.DN.ToString();
+                else
+                    inputValue = csentry[SourceAttribute].Value;
 
             string targetValue;
             if (!UseDomainRoot)

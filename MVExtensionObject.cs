@@ -1,5 +1,6 @@
 
 using System;
+using System.Text.RegularExpressions;
 using Microsoft.MetadirectoryServices;
 using Microsoft.MetadirectoryServices.Logging;
 using Mms_Metaverse.Config;
@@ -8,7 +9,6 @@ namespace Mms_Metaverse
 {
 	public class MVExtensionObject : IMVSynchronization
     {
-        private Utility _Util = new Utility();
         private SolutionConfiguration _SolutionConfiguration;
 
         public MVExtensionObject()
@@ -21,7 +21,7 @@ namespace Mms_Metaverse
         {
             Logging.Log(new string('=', 60));
             Logging.Log("MV extension [Initialize] started", loggingLevel: 3);
-            _Util.LogDllInfos(System.Reflection.Assembly.GetExecutingAssembly());
+            Utility.LogDllInfos(System.Reflection.Assembly.GetExecutingAssembly());
             try { _SolutionConfiguration = new SolutionConfiguration(); }
             catch (Exception e)
             {
@@ -49,6 +49,7 @@ namespace Mms_Metaverse
                     catch (Exception e)
                     {
                         Logging.LogException(e, "Extension MIMActiveDirectoryMigration [Provision]", $"Person Provisioning Error: {mventry["distinguishedName"].Value}", false);
+                        Utility.LogExceptionDetails(e);
                         throw e;
                     }
                     break;
@@ -61,7 +62,7 @@ namespace Mms_Metaverse
         {
             Logging.Log("MV extension [ShouldDeleteFromMV] started", loggingLevel: 3);
             // delete MV object, if the object is the SourceConnector
-            bool shouldDeleteFromMV = _Util.IsSourceConnector(csentry);
+            bool shouldDeleteFromMV = Utility.IsSourceConnector(csentry);
             Logging.Log(String.Format("object '{0}' will be delete: {1}", mventry.ToString(), shouldDeleteFromMV.ToString()), loggingLevel: 3);
             Logging.Log("MV extension [ShouldDeleteFromMV] finished", loggingLevel: 3);
             return shouldDeleteFromMV;
@@ -85,10 +86,10 @@ namespace Mms_Metaverse
                 {
                     case 0:
                         Logging.Log($"[{target.Name}][{mventry["distinguishedName"].Value}] Target not yet found in connectorspace. Creating ...", true, 3);
-                        csentry = targetMA.Connectors.StartNewConnector("person");
-                        csentry.DN = targetMA.CreateDN(mventry["distinguishedName"].Value);
-                        csentry["distinguishedName"].Value = target.InsertRoot(mventry["distinguishedName"].Value);
-                        csentry["accountName"].Value = mventry["accountName"].Value;
+                        csentry = targetMA.Connectors.StartNewConnector("user");
+                        csentry.DN = targetMA.CreateDN(ResolveProvisionDN(mventry["distinguishedName"].Value, target));
+                        //csentry["distinguishedName"].Value = target.InsertRoot(mventry["distinguishedName"].Value);
+                        csentry["sAMAccountName"].Value = mventry["accountName"].Value;
                         csentry["cn"].Value = mventry["cn"].Value;
                         csentry.CommitNewConnector();
                         break;
@@ -103,5 +104,19 @@ namespace Mms_Metaverse
             }
         }
         #endregion Flow Implementations
+
+        #region Utility
+        private string ResolveProvisionDN(string SourceDN, ConnectorConfig Target)
+        {
+            if (SourceDN.EndsWith("%ROOT%", StringComparison.OrdinalIgnoreCase))
+                return Regex.Replace(SourceDN, "%ROOT%$", Target.Root, RegexOptions.IgnoreCase);
+
+            foreach (ConnectorConfig source in _SolutionConfiguration.Connectors)
+                if (SourceDN.EndsWith(source.Root, StringComparison.OrdinalIgnoreCase))
+                    return Regex.Replace(SourceDN, $"{source.Root}$", Target.Root, RegexOptions.IgnoreCase);
+
+            return SourceDN;
+        }
+        #endregion Utility
     }
 }

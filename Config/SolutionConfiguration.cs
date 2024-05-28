@@ -27,13 +27,18 @@ namespace Mms_Metaverse.Config
         public SolutionConfiguration()
         {
             Logging.Log("SolutionConfiguration [constructor] started", loggingLevel: 3);
-            LoadConfiguration();
+            try { LoadConfiguration(); }
+            catch (Exception e)
+            {
+                Utility.LogExceptionDetails(e);
+                throw e;
+            }
             Logging.Log("SolutionConfiguration [constructor] finished", loggingLevel: 3);
         }
         public void LoadConfiguration()
         {
             Logging.Log("SolutionConfiguration [LoadConfiguration] started", loggingLevel: 3);
-            string configPath = Path.Combine(Utils.ExtensionsDirectory, Constants.ConfigFileName);
+            string configPath = Path.Combine(Utils.ExtensionsDirectory, Constants.ConfigFolder, Constants.ConfigFileName);
             XmlDocument document = new XmlDocument();
             document.Load(configPath);
             

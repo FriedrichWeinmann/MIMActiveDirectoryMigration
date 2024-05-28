@@ -18,7 +18,7 @@ namespace Mms_Metaverse.Config
 
         public ConnectorConfig(XmlElement Node)
         {
-            foreach (XmlElement child in Node.ChildNodes)
+            foreach (XmlNode child in Node.ChildNodes)
             {
                 switch (child.Name.ToLower())
                 {

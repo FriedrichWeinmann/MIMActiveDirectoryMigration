@@ -12,7 +12,7 @@ namespace Mms_Metaverse
 {
     public class Utility
     {
-        public void LogDllInfos(System.Reflection.Assembly assembly)
+        public static void LogDllInfos(System.Reflection.Assembly assembly)
         {
             Logging.Log("Common.Utils [getDllInfos] started", loggingLevel: 3);
 
@@ -28,7 +28,17 @@ namespace Mms_Metaverse
             Logging.Log("Common.Utils [getDllInfos] finished", loggingLevel: 3);
         }
 
-        public bool IsSourceConnector(CSEntry csentry)
+        public static void LogExceptionDetails(Exception e)
+        {
+            Logging.Log(new string('-', 50));
+            Logging.Log(e.Message, true, 1);
+            Logging.Log(new string('_', 20));
+            foreach (string line in e.StackTrace.Split('\n'))
+                Logging.Log(line.TrimEnd(), true, 1);
+            Logging.Log(new string('-', 50));
+        }
+
+        public static bool IsSourceConnector(CSEntry csentry)
         {
             bool isSourceConnector = csentry.ConnectionRule.Equals(RuleType.Projection);
             return isSourceConnector;
