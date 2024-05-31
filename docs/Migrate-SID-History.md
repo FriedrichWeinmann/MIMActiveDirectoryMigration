@@ -16,7 +16,13 @@ To migrate SID History, some preparations are needed:
 This tool can safely be run repeatedly to migrate additional accounts.
 
 ```powershell
-.\SIDHistoryMigration.ps1 -SourceOU 'OU=Users,OU=Company,DC=fabrikam,DC=org' -SourceServer dc1.fabrikam.org -SourceCredential $sourceCred -DestinationServer dc1.contoso.com -DestinationCredential $destCred
+$sourceOU = 'OU=Users,OU=Company,DC=fabrikam,DC=org'
+$sourceServer = 'dc1.fabrikam.org'
+$destServer = 'dc1.contoso.com'
+$sourceCred = Get-Credential 'fabrikam\Administrator'
+$destCred = Get-Credential 'contoso\Administrator'
+
+.\SIDHistoryMigration.ps1 -SourceOU $sourceOU -SourceServer $sourceServer -SourceCredential $sourceCred -DestinationServer $destServer -DestinationCredential $destCred
 ```
 
 This will try to migrate SID for all principals under the defined source OU.
