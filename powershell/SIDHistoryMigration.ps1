@@ -88,7 +88,6 @@ trap {
 	Stop-Log
 	throw $_
 }
-Start-Log -Path $LogPath
 
 #region Functions
 function Start-Log {
@@ -510,6 +509,8 @@ function Write-MigrationPrincipalLog {
 	}
 }
 #endregion Functions
+
+Start-Log -Path $LogPath
 
 Get-MigrationPrincipal -Server $SourceServer -Credential $SourceCredential -SearchBase $SourceOU -LdapFilter $Filter |
 	Import-ADPrincipalSID -Server $DestinationServer -Credential $DestinationCredential -FromServer $SourceServer -FromCredential $SourceCredential |
