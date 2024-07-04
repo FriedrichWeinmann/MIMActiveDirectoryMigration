@@ -26,4 +26,16 @@
       </attribute>
     </attributes>
   </import>
+  <!--
+  <export>
+	<attributes>
+	  <attribute>
+		<name>TelephoneNumber</name>
+		<type>replace</replace>
+		<value>\(|\)</value>
+		<newValue></newValue>
+	  <attribute>
+	</attributes>
+  </export>
+  -->
 </config>
