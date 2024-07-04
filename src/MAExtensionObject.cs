@@ -94,7 +94,13 @@ namespace Mms_Metaverse
         void IMASynchronization.MapAttributesForImport(string FlowRuleName, CSEntry csentry, MVEntry mventry)
         {
             Logging.Log($"MA extension: MapAttributesForImport - FlowRuleName: {FlowRuleName} | CSE: {csentry} | MVE: {mventry}", true, 3);
-            ConnectorConfig config = _SolutionConfiguration.ConnectorsByConnectorName[csentry.MA.Name];
+            ConnectorConfig config;
+            try { config = _SolutionConfiguration.ConnectorsByConnectorName[csentry.MA.Name]; }
+            catch (Exception e)
+            {
+                Logging.Log($"MA extension: No configuration defined for Connector '{csentry.MA.Name}' - Configured Connectors: {String.Join(", ", _SolutionConfiguration.ConnectorsByConnectorName.Keys)}", true, 1);
+                throw new InvalidOperationException($"No configuration defined for Connector '{csentry.MA.Name}' - Configured Connectors: {String.Join(", ", _SolutionConfiguration.ConnectorsByConnectorName.Keys)}", e);
+            }
 
             if (config == null)
             {
