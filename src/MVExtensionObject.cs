@@ -91,7 +91,16 @@ namespace Mms_Metaverse
                         //csentry["distinguishedName"].Value = target.InsertRoot(mventry["distinguishedName"].Value);
                         csentry["sAMAccountName"].Value = mventry["accountName"].Value;
                         csentry["cn"].Value = mventry["cn"].Value;
-                        csentry.CommitNewConnector();
+                        try { csentry.CommitNewConnector(); }
+                        catch (Exception e)
+                        {
+                            if (Regex.IsMatch(e.Message, "already exists in management agent"))
+                            {
+                                Logging.Log($"[{target.Name}][{mventry["distinguishedName"].Value}] Target already found in connectorspace. Updating ...", true, 3);
+                                break;
+                            }
+                            throw e;
+                        }
                         break;
                     case 1:
                         Logging.Log($"[{target.Name}][{mventry["distinguishedName"].Value}] Target already found in connectorspace. Updating ...", true, 3);
