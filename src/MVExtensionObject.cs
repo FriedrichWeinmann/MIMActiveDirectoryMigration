@@ -48,7 +48,11 @@ namespace Mms_Metaverse
                     try { ProvisionUser(mventry); }
                     catch (Exception e)
                     {
-                        Logging.LogException(e, "Extension MIMActiveDirectoryMigration [Provision]", $"Person Provisioning Error: {mventry["distinguishedName"].Value}", false);
+                        string userDN = $"<unknown: {mventry.ToString()}>";
+                        // On Delete this will fail
+                        try { userDN = mventry["distinguishedName"].Value; }
+                        catch { }
+                        Logging.LogException(e, "Extension MIMActiveDirectoryMigration [Provision]", $"Person Provisioning Error: {userDN}", false);
                         Utility.LogExceptionDetails(e);
                         throw e;
                     }
