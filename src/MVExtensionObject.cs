@@ -51,7 +51,11 @@ namespace Mms_Metaverse
                         string userDN = $"<unknown: {mventry.ToString()}>";
                         // On Delete this will fail
                         try { userDN = mventry["distinguishedName"].Value; }
-                        catch { }
+                        catch {
+                            Logging.Log("MV Extension [Provision] mventry with unexpected keys found, missing DistinguishedName");
+                            foreach (string attrib in mventry)
+                                Logging.Log($"MV Extension [Provision] [Debug] Attribute {attrib} | Value {mventry[attrib].Value}");
+                        }
                         Logging.LogException(e, "Extension MIMActiveDirectoryMigration [Provision]", $"Person Provisioning Error: {userDN}", false);
                         Utility.LogExceptionDetails(e);
                         throw e;
