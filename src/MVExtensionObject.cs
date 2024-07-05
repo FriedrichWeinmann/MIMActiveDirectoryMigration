@@ -40,8 +40,12 @@ namespace Mms_Metaverse
 
         void IMVSynchronization.Provision (MVEntry mventry)
         {
-            Logging.Log("Provision start", true, 3);
+            // Skip empty objects as delete provisions
+            if (GetAttributeCount(mventry) == 0)
+                return;
 
+            Logging.Log("Provision start", true, 3);
+            
             switch (mventry.ObjectType.ToLower())
             {
                 case "person":
@@ -133,6 +137,14 @@ namespace Mms_Metaverse
                     return Regex.Replace(SourceDN, $"{source.Root}$", Target.Root, RegexOptions.IgnoreCase);
 
             return SourceDN;
+        }
+        
+        private int GetAttributeCount(MVEntry mventry)
+        {
+            int count = 0;
+            foreach (string attribute in mventry)
+                count++;
+            return count;
         }
         #endregion Utility
     }
