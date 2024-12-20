@@ -214,12 +214,13 @@ function Update-GroupMembership {
 		$principals.AddRange(@($InputObject))
 	}
 	end {
+		if (-not $principals) { return }
 		switch ($Mode) {
 			Add {
-				Add-ADGroupMember @adParam -Identity $Group -Members $principals
+				$principals | Add-ADPrincipalGroupMembership @adParam -MemberOf $Group
 			}
 			Remove {
-				Remove-ADGroupMember @adParam -Identity $Group -Members $principals
+				$principals | Remove-ADPrincipalGroupMembership @adParam -MemberOf $Group
 			}
 		}
 	}
