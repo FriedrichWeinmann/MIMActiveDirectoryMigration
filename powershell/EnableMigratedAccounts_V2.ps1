@@ -456,8 +456,44 @@ function Enable-Account {
 		}
 	}
 }
+
+function Disable-Account {
+	[CmdletBinding(SupportsShouldProcess = $true)]
+	param (
+		[Parameter(ValueFromPipeline = $true)]
+		$InputObject,
+
+		[string]
+		$Server,
+
+		[AllowNull()]
+		[PSCredential]
+		$Credential
+	)
+
+	begin {
+		$adParam = @{ }
+		if ($Server) { $adParam.Server = $Server }
+		if ($Credential) { $adParam.Credential = $Credential }
+
+		$adParam.Server = (Get-ADDomain @adParam).PDCEmulator
+	}
+
+	process {
+		foreach ($user in $InputObject) {
+			$null = Disable-ADAccount @adParam -Identity $user.SamAccountName
+		}
+	}
+}
+
 #endregion Functions
 
+#-> Enable in Destination what is Enabled in Source
 $sourceEnabledUsers = Get-LdapUser -Credential $SourceCredential -SearchRoot $SourceOU -Type Enabled -Property SamAccountName
 $destinationDisabledUsers = Get-LdapUser -Credential $Credential -SearchRoot $DestinationOU -Type Disabled -Property SamAccountName, PwdLastSet
 $destinationDisabledUsers | Where-Object SamAccountName -In $sourceEnabledUsers.SamAccountName | Enable-Account -Server ($DestinationOU -replace '^.+?,DC=' -replace ',DC=', '.') -Credential $Credential
+
+#-> Disable in Destination what is Disabled in Source
+$sourceDisabledUsers = Get-LdapUser -Credential $SourceCredential -SearchRoot $SourceOU -Type Disabled -Property SamAccountName
+$destinationEnabledUsers = Get-LdapUser -Credential $Credential -SearchRoot $DestinationOU -Type Enabled -Property SamAccountName, PwdLastSet
+$destinationEnabledUsers | Where-Object SamAccountName -In $sourceDisabledUsers.SamAccountName | Disable-Account -Server ($DestinationOU -replace '^.+?,DC=' -replace ',DC=', '.') -Credential $Credential
