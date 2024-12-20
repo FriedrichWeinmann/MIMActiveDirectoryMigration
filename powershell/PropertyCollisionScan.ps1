@@ -11,6 +11,7 @@
 
 .PARAMETER Server
 	The domains / DCs to scan. Avoid specifying multiple DCs of the same domain, as that will lead to result duplication.
+	You can also provide the DistinguishedName of an OU instead of a domain.
 
 .PARAMETER Credential
 	The credentials to use for the connections.
@@ -18,7 +19,7 @@
 
 .PARAMETER Connections
 	A hashtable of connections to use.
-	The hashtable must use the domain/dc name as key and the credentials as value.
+	The hashtable must use the domain/dc name (or OU Path) as key and the credentials as value.
 	Example:
 	@{ 'contoso.com' = $cred }
 	Keys without values or values that are not PSCredential will be queried as the current account.
@@ -151,6 +152,14 @@ function Resolve-Connection {
 	if ($Credential) { $credParam.Credential = $Credential }
 
 	foreach ($computer in $Server) {
+		if ($computer -match ',DC=') {
+			@{
+				Server = $computer -replace '^.+?,DC=' -replace ',DC=','.'
+				SearchRoot = $computer
+			} + $credParam
+			continue
+		}
+
 		@{ Server = $Computer } + $credParam
 	}
 
@@ -159,6 +168,13 @@ function Resolve-Connection {
 		if ($pair.Key -in $Server) { continue }
 
 		$param = @{ Server = $pair.Key }
+		if ($param.Server -match ',DC=') {
+			$param = @{
+				Server = $param.Server -replace '^.+?,DC=' -replace ',DC=','.'
+				SearchRoot = $param.Server
+			}
+		}
+
 		if ($pair.Value -is [PSCredential]) {
 			$param.Credential = $pair.Value
 		}
@@ -430,7 +446,7 @@ function Get-LdapObject {
 }
 
 function Get-LdapUser {
-	[CmdletBinding()]
+	[CmdletBinding(DefaultParameterSetName = 'Filter')]
 	param (
 		[string]
 		$Server,
@@ -438,16 +454,41 @@ function Get-LdapUser {
 		[PSCredential]
 		$Credential,
 
+		[Parameter(ParameterSetName = 'Filter')]
 		[string]
 		$LdapFilter = '(objectCategory=user)',
+
+		[Parameter(ParameterSetName = 'Build')]
+		[ValidateSet('Enabled', 'Disabled')]
+		[string[]]
+		$Type,
+
+		[string]
+		$SearchRoot,
 
 		[string[]]
 		$Property
 	)
 
+	if ($Type) {
+		$fragments = @('(objectCategory=user)')
+		foreach ($entry in $Type) {
+			switch ($entry) {
+				Enabled { $fragments += '(!(userAccountControl:1.2.840.113556.1.4.803:=2))' }
+				Disabled { $fragments += '(userAccountControl:1.2.840.113556.1.4.803:=2)' }
+			}
+		}
+		$LdapFilter = '(&{0})' -f ($fragments -join '')
+	}
+
+	if ($SearchRoot -and -not $Server) {
+		$Server = $SearchRoot -replace '^.+?,DC=' -replace ',DC=', '.'
+	}
+
 	$param = @{}
 	if ($Server) { $param.Server = $Server }
 	if ($Credential) { $param.Credential = $Credential }
+	if ($SearchRoot) { $param.SearchRoot = $SearchRoot }
 
 	$users = Get-LdapObject @param -LdapFilter $LdapFilter -Property $Property -Raw
 	foreach ($user in $users) {

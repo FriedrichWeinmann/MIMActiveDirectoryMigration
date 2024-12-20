@@ -20,6 +20,9 @@
 .PARAMETER Credential
 	The credentials that should be used against the destination domain.
 
+.PARAMETER SourceCredential
+	The crdentials that should be used against the source domain.
+
 .EXAMPLE
 	PS C:\> .\EnableMigratedAccounts_V2.ps1 -SourceOU 'OU=Fabrikam,DC=fabrikam,DC=org' -DestinationOU 'OU=Contoso,DC=contoso,DC=com'
 
@@ -35,7 +38,10 @@ param (
 	$DestinationOU,
 
 	[PSCredential]
-	$Credential
+	$Credential,
+
+	[PSCredential]
+	$SourceCredential
 )
 
 $ErrorActionPreference = 'Stop'
@@ -452,6 +458,6 @@ function Enable-Account {
 }
 #endregion Functions
 
-$sourceEnabledUsers = Get-LdapUser -SearchRoot $SourceOU -Type Enabled -Property SamAccountName
+$sourceEnabledUsers = Get-LdapUser -Credential $SourceCredential -SearchRoot $SourceOU -Type Enabled -Property SamAccountName
 $destinationDisabledUsers = Get-LdapUser -Credential $Credential -SearchRoot $DestinationOU -Type Disabled -Property SamAccountName, PwdLastSet
 $destinationDisabledUsers | Where-Object SamAccountName -In $sourceEnabledUsers.SamAccountName | Enable-Account -Server ($DestinationOU -replace '^.+?,DC=' -replace ',DC=', '.') -Credential $Credential

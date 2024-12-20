@@ -19,6 +19,12 @@
 	Do not update the description of the root OU itself.
 	By default, if the destination root OU has a different description, that too will be updated.
 
+.PARAMETER SourceCredential
+	Credentials to use for access to the source domain.
+
+.PARAMETER DestinationCredential
+	Credentials to use for access to the destination domain.
+
 .PARAMETER WhatIf
 	If this switch is enabled, no actions are performed but informational messages will be displayed that explain what would happen if the command were to run.
 
@@ -41,7 +47,13 @@ param (
 	$DestinationOU,
 
 	[switch]
-	$ExcludeRoot
+	$ExcludeRoot,
+
+	[pscredential]
+	$SourceCredential,
+
+	[pscredential]
+	$DestinationCredential
 )
 
 $ErrorActionPreference = 'Stop'
@@ -314,17 +326,23 @@ function Get-LdapObject {
 	}
 }
 
-
 function Get-OUDescription {
 	[CmdletBinding()]
 	param (
 		[string]
-		$Path
+		$Path,
+
+		[AllowNull()]
+		[PSCredential]
+		$Credential
 	)
+
+	$param = @{}
+	if ($Credential) { $param.Credential = $Credential }
 
 	$escapedPath = [regex]::Escape($Path)
 	$server = $Path -replace '^.+?,DC=' -replace ',DC=', '.'
-	foreach ($adOU in Get-LdapObject -Server $server -SearchRoot $Path -LdapFilter '(objectCategory=organizationalUnit)' -Property Description, DistinguishedName) {
+	foreach ($adOU in Get-LdapObject @param -Server $server -SearchRoot $Path -LdapFilter '(objectCategory=organizationalUnit)' -Property Description, DistinguishedName) {
 		[PSCustomObject]@{
 			Path              = $adOU.DistinguishedName -replace $escapedPath, '%ROOT%'
 			Description       = $adOU.Description
@@ -367,20 +385,28 @@ function Update-OUDescription {
 		$InputObject,
 
 		[switch]
-		$ExcludeRoot
+		$ExcludeRoot,
+
+		[AllowNull()]
+		[PSCredential]
+		$Credential
 	)
 
+	begin {
+		$adParam = @{ }
+		if ($Credential) { $adParam.Credential = $Credential }
+	}
 	process {
 		foreach ($item in $InputObject) {
 			if ($ExcludeRoot -and $item.Path -eq '%ROOT%') { continue }
 			if (-not $PSCmdlet.ShouldProcess($item.DistinguishedName, "Update Description to: $($item.New)")) { continue }
-			if (-not $item.New) { Set-ADObject -Server $item.Server -Identity $item.DistinguishedName -Clear Description -Confirm:$false }
-			else { Set-ADObject -Server $item.Server -Identity $item.DistinguishedName -Replace @{ Description = $item.New } -Confirm:$false}
+			if (-not $item.New) { Set-ADObject @adParam -Server $item.Server -Identity $item.DistinguishedName -Clear Description -Confirm:$false }
+			else { Set-ADObject @adParam -Server $item.Server -Identity $item.DistinguishedName -Replace @{ Description = $item.New } -Confirm:$false}
 		}
 	}
 }
 #endregion Functions
 
-$sourceDescriptions = Get-OUDescription -Path $SourceOU
-$destinationDescriptions = Get-OUDescription -Path $DestinationOU
-Resolve-OUDescriptionUpdate -Source $sourceDescriptions -Destination $destinationDescriptions | Update-OUDescription -ExcludeRoot:$ExcludeRoot
+$sourceDescriptions = Get-OUDescription -Path $SourceOU -Credential $SourceCredential
+$destinationDescriptions = Get-OUDescription -Path $DestinationOU -Credential $DestinationCredential
+Resolve-OUDescriptionUpdate -Source $sourceDescriptions -Destination $destinationDescriptions | Update-OUDescription -ExcludeRoot:$ExcludeRoot -Credential $DestinationCredential
