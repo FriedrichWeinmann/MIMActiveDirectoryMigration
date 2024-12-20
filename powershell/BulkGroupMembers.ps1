@@ -37,7 +37,7 @@
 	If this switch is enabled, you will be prompted for confirmation before executing any operations that change state.
 
 .EXAMPLE
-	PS C:\> .\BulkGroupMember.ps1 -Group HR-Discussions -Conditions User, Enabled -Mode Add -SearchBase 'OU=HR,OU=Users,DC=contoso,DC=com'
+	PS C:\> .\BulkGroupMembers.ps1 -Group HR-Discussions -Conditions User, Enabled -Mode Add -SearchBase 'OU=HR,OU=Users,DC=contoso,DC=com'
 
 	Will add all enabled users under 'OU=HR,OU=Users,DC=contoso,DC=com' to the group "HR-DIscussions"
 #>
