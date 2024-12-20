@@ -215,14 +215,19 @@ function Update-GroupMembership {
 	}
 	end {
 		if (-not $principals) { return }
-		switch ($Mode) {
-			Add {
-				$principals | Add-ADPrincipalGroupMembership @adParam -MemberOf $Group
+
+		$done = 0
+		$total = @($principals).Count
+		do {
+			$next = $done + 2000
+			if ($next -gt $total) { $next = $total }
+			switch ($Mode) {
+				Add { $principals[$done..$next] | Add-ADPrincipalGroupMembership @adParam -MemberOf $Group }
+				Remove { $principals[$done..$next] | Remove-ADPrincipalGroupMembership @adParam -MemberOf $Group }
 			}
-			Remove {
-				$principals | Remove-ADPrincipalGroupMembership @adParam -MemberOf $Group
-			}
+			$done = $next
 		}
+		while ($done -lt $total)
 	}
 }
 #endregion Functions
