@@ -50,7 +50,7 @@
 	By default, no output will be produced.
 
 .EXAMPLE
-	PS C:\> .\ScheduleMIMAgent.ps1 -ConfigPath .\deltasync.config.psd1
+	PS C:\> .\ScheduleMIMAgent-parallel.ps1 -ConfigPath .\deltasync.config.psd1
 
 	Executes the steps provided in "deltasync.config.psd1"
 #>
@@ -66,7 +66,7 @@ param (
 
 $ErrorActionPreference = 'Stop'
 trap {
-	Write-Warning "SDcript Failed: $_"
+	Write-Warning "Script Failed: $_"
 	throw $_
 }
 
@@ -283,6 +283,7 @@ function Invoke-RunProfile {
 		Critical    = $true # Was the error bad enough that no retries are to be done?
 		Error       = $null
 		ReturnValue = ''
+		Duration    = $null
 	}
 
 	if (-not $agentName -or -not $profileName) {
@@ -376,18 +377,33 @@ function Invoke-RunProfileConfig {
 			$RunProfile
 		)
 
+		$ErrorActionPreference = 'Stop'
+		trap {
+			[PSCustomObject]@{
+				Profile  = $RunProfile
+				Success  = $false
+				Error    = $_
+				Duration = (Get-Date) - $start
+			}
+			return
+		}
+
 		if ($WaitBefore -gt 0) { Start-Sleep -Seconds $WaitBefore }
+
+		$start = Get-Date
 
 		$currentCount = 0
 		do {
+			if ($currentCount -gt 0) { Start-Sleep -Seconds $RetryWait }
+
 			$result = Invoke-RunProfile -MgmtAgents $managementAgents -Task $RunProfile
 			if ($result.Success) { break } # All is well, no need to retry
 			if ($result.Critical) { break } # No success is possible, no point trying again
 
 			$currentCount++
-			Start-Sleep -Seconds $RetryWait
 		}
 		until ($currentCount -gt $RetryCount)
+		$result.Duration = (Get-Date) - $start
 
 		if ($WaitAfter -gt 0) { Start-Sleep -Seconds $WaitAfter }
 
@@ -409,9 +425,9 @@ function Invoke-RunProfileConfig {
 		WaitAfter        = $Config.WaitAfter
 		RetryCount       = $Config.RetryCount
 		RetryWait        = $Config.RetryWait
-	} -Functions @{
-		'Invoke-RunProfile' = Get-Command -Name Invoke-RunProfile -CommandType Function
-	} -Throttle $jobCount -Wait
+	} -Functions @(
+		Get-Command -Name Invoke-RunProfile -CommandType Function
+	) -Throttle $jobCount -Wait
 	#endregion Execute
 
 	#region Result Processing
@@ -448,6 +464,6 @@ foreach ($step in $script:profileConfig.Keys | Sort-Object) {
 	if ($PassThru) { $result.Tasks }
 }
 
-if (-not $healthy) {
+if (-not $healthy -and -not $PassThru) {
 	throw "Task Sequence Failed"
 }
