@@ -42,6 +42,9 @@ namespace Mms_Metaverse.Config
                     case "simplevalue":
                         Value = Regex.Escape(child.InnerText);
                         break;
+                    case "connector":
+                        Connector = child.InnerText;
+                        break;
                     default:
                         break;
                 }

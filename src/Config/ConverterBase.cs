@@ -12,6 +12,7 @@ namespace Mms_Metaverse.Config
     {
         public string Attribute;
         public string SourceAttribute;
+        public string Connector;
         public Direction Direction;
 
         public ConverterBase(XmlElement Configuration, Direction Direction) { }

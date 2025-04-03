@@ -111,11 +111,15 @@ namespace Mms_Metaverse
             try
             {
                 if (config.Target)
+                {
                     foreach (ConverterBase converter in _SolutionConfiguration.ConverterExportByAttribute.Values)
-                        converter.Convert(mventry, csentry, config);
+                        if (String.IsNullOrEmpty(converter.Connector) || String.Equals(converter.Connector, csentry.MA.Name, StringComparison.OrdinalIgnoreCase))
+                            converter.Convert(mventry, csentry, config);
+                }
                 else
                     foreach (ConverterBase converter in _SolutionConfiguration.ConverterImportByAttribute.Values)
-                        converter.Convert(mventry, csentry, config);
+                        if (String.IsNullOrEmpty(converter.Connector) || String.Equals(converter.Connector, csentry.MA.Name, StringComparison.OrdinalIgnoreCase))
+                            converter.Convert(mventry, csentry, config);
             }
             catch (Exception e)
             {

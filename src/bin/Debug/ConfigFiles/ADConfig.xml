@@ -20,7 +20,7 @@
         <name>distinguishedName</name>
         <type>replace</type>
         <!-- <value>___</value> -->
-        <!-- <simplevalue>___</value> -->
+        <!-- <simplevalue>___</simplevalue> -->
         <domainroot>true</domainroot>
         <newvalue>%ROOT%</newvalue>
       </attribute>
@@ -31,10 +31,10 @@
 	<attributes>
 	  <attribute>
 		<name>TelephoneNumber</name>
-		<type>replace</replace>
+		<type>replace</type>
 		<value>\(|\)</value>
 		<newValue></newValue>
-	  <attribute>
+	  </attribute>
 	</attributes>
   </export>
   -->

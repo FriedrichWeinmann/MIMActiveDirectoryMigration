@@ -20,10 +20,21 @@
         <name>distinguishedName</name>
         <type>replace</type>
         <!-- <value>___</value> -->
-        <!-- <simplevalue>___</value> -->
+        <!-- <simplevalue>___</simplevalue> -->
         <domainroot>true</domainroot>
         <newvalue>%ROOT%</newvalue>
       </attribute>
+
+	  <!--
+	  <attribute>
+		<connector>Source Fabrikam</connector>
+        <sourcename>UserPrincipalName</sourcename>
+        <name>UserPrincipalName</name>
+        <type>replace</type>
+        <value>@fabrikam.org$</value>
+        <newvalue>@contoso.com</newvalue>
+      </attribute>
+	  -->
     </attributes>
   </import>
   <!--
@@ -31,10 +42,10 @@
 	<attributes>
 	  <attribute>
 		<name>TelephoneNumber</name>
-		<type>replace</replace>
+		<type>replace</type>
 		<value>\(|\)</value>
 		<newValue></newValue>
-	  <attribute>
+	  </attribute>
 	</attributes>
   </export>
   -->
