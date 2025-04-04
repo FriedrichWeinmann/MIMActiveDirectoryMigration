@@ -70,10 +70,39 @@ namespace Mms_Metaverse
 
         void IMASynchronization.MapAttributesForExport(string FlowRuleName, MVEntry mventry, CSEntry csentry)
         {
-            //
-            // TODO: write your export attribute flow code.
-            //
-            throw new EntryPointNotImplementedException();
+            Logging.Log($"MA extension: MapAttributesForExport - FlowRuleName: {FlowRuleName} | CSE: {csentry} | MVE: {mventry}", true, 3);
+            ConnectorConfig config;
+            try { config = _SolutionConfiguration.ConnectorsByConnectorName[csentry.MA.Name]; }
+            catch (Exception e)
+            {
+                Logging.Log($"MA extension: No configuration defined for Connector '{csentry.MA.Name}' - Configured Connectors: {String.Join(", ", _SolutionConfiguration.ConnectorsByConnectorName.Keys)}", true, 1);
+                throw new InvalidOperationException($"No configuration defined for Connector '{csentry.MA.Name}' - Configured Connectors: {String.Join(", ", _SolutionConfiguration.ConnectorsByConnectorName.Keys)}", e);
+            }
+
+            if (config == null)
+            {
+                Logging.Log($"MA extension: No configuration defined for Connector '{csentry.MA.Name}'", true, 1);
+                return;
+            }
+
+            try
+            {
+                if (config.Target)
+                {
+                    foreach (ConverterBase converter in _SolutionConfiguration.ConverterExportByAttribute.Values)
+                        if (String.IsNullOrEmpty(converter.Connector) || String.Equals(converter.Connector, csentry.MA.Name, StringComparison.OrdinalIgnoreCase))
+                            converter.Convert(mventry, csentry, config);
+                }
+                else
+                    foreach (ConverterBase converter in _SolutionConfiguration.ConverterImportByAttribute.Values)
+                        if (String.IsNullOrEmpty(converter.Connector) || String.Equals(converter.Connector, csentry.MA.Name, StringComparison.OrdinalIgnoreCase))
+                            converter.Convert(mventry, csentry, config);
+            }
+            catch (Exception e)
+            {
+                Utility.LogExceptionDetails(e);
+                throw e;
+            }
         }
         #endregion Interface Implementation: Not Used
 

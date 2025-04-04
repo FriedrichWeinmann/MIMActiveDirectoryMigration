@@ -24,6 +24,17 @@
         <domainroot>true</domainroot>
         <newvalue>%ROOT%</newvalue>
       </attribute>
+
+	  <!--
+	  <attribute>
+		<connector>Source Fabrikam</connector>
+        <sourcename>UserPrincipalName</sourcename>
+        <name>UserPrincipalName</name>
+        <type>replace</type>
+        <value>@fabrikam.org$</value>
+        <newvalue>@contoso.com</newvalue>
+      </attribute>
+	  -->
     </attributes>
   </import>
   <!--
