@@ -1,4 +1,5 @@
 ﻿using Microsoft.MetadirectoryServices;
+using Microsoft.MetadirectoryServices.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -80,7 +81,7 @@ namespace Mms_Metaverse.Config
                 else
                     targetValue = Regex.Replace(inputValue, Regex.Escape(Config.Root), NewValue);
             }
-
+            Logging.Log($"Converter: Mapping {SourceAttribute} to {Attribute}, input value '{inputValue}' translated to '{targetValue}'", true, 4);
             if (Direction == Direction.Export)
                 csentry[Attribute].Value = targetValue;
             else
