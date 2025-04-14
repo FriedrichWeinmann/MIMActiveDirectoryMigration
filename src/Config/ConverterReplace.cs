@@ -62,6 +62,7 @@ namespace Mms_Metaverse.Config
 
         public override void Convert(MVEntry mventry, CSEntry csentry, ConnectorConfig Config)
         {
+            Logging.Log($"Converter: Mapping {SourceAttribute} to {Attribute} (starting)", true, 4);
             string inputValue;
             if (Direction == Direction.Export)
                 inputValue = mventry[SourceAttribute].Value;
