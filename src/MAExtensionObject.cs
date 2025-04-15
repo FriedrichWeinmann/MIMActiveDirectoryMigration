@@ -72,6 +72,7 @@ namespace Mms_Metaverse
         {
             Logging.Log($"MA extension: MapAttributesForExport - FlowRuleName: {FlowRuleName} | CSE: {csentry} | MVE: {mventry}", true, 3);
             ConnectorConfig config;
+            Dictionary<string, ConverterBase> converters;
             try { config = _SolutionConfiguration.ConnectorsByConnectorName[csentry.MA.Name]; }
             catch (Exception e)
             {
@@ -85,18 +86,15 @@ namespace Mms_Metaverse
                 return;
             }
 
+            if (config.Target)
+                converters = _SolutionConfiguration.ConvertersByConnectorName[csentry.MA.Name][Direction.Export];
+            else
+                converters = _SolutionConfiguration.ConvertersByConnectorName[csentry.MA.Name][Direction.Import];
+
             try
             {
-                if (config.Target)
-                {
-                    foreach (ConverterBase converter in _SolutionConfiguration.ConverterExportByAttribute.Values)
-                        if (String.IsNullOrEmpty(converter.Connector) || String.Equals(converter.Connector, csentry.MA.Name, StringComparison.OrdinalIgnoreCase))
-                            converter.Convert(mventry, csentry, config);
-                }
-                else
-                    foreach (ConverterBase converter in _SolutionConfiguration.ConverterImportByAttribute.Values)
-                        if (String.IsNullOrEmpty(converter.Connector) || String.Equals(converter.Connector, csentry.MA.Name, StringComparison.OrdinalIgnoreCase))
-                            converter.Convert(mventry, csentry, config);
+                foreach (ConverterBase converter in converters.Values)
+                    converter.Convert(mventry, csentry, config);
             }
             catch (Exception e)
             {
@@ -124,6 +122,7 @@ namespace Mms_Metaverse
         {
             Logging.Log($"MA extension: MapAttributesForImport - FlowRuleName: {FlowRuleName} | CSE: {csentry} | MVE: {mventry}", true, 3);
             ConnectorConfig config;
+            Dictionary<string, ConverterBase> converters;
             try { config = _SolutionConfiguration.ConnectorsByConnectorName[csentry.MA.Name]; }
             catch (Exception e)
             {
@@ -137,18 +136,15 @@ namespace Mms_Metaverse
                 return;
             }
 
+            if (config.Target)
+                converters = _SolutionConfiguration.ConvertersByConnectorName[csentry.MA.Name][Direction.Export];
+            else
+                converters = _SolutionConfiguration.ConvertersByConnectorName[csentry.MA.Name][Direction.Import];
+
             try
             {
-                if (config.Target)
-                {
-                    foreach (ConverterBase converter in _SolutionConfiguration.ConverterExportByAttribute.Values)
-                        if (String.IsNullOrEmpty(converter.Connector) || String.Equals(converter.Connector, csentry.MA.Name, StringComparison.OrdinalIgnoreCase))
-                            converter.Convert(mventry, csentry, config);
-                }
-                else
-                    foreach (ConverterBase converter in _SolutionConfiguration.ConverterImportByAttribute.Values)
-                        if (String.IsNullOrEmpty(converter.Connector) || String.Equals(converter.Connector, csentry.MA.Name, StringComparison.OrdinalIgnoreCase))
-                            converter.Convert(mventry, csentry, config);
+                foreach (ConverterBase converter in converters.Values)
+                    converter.Convert(mventry, csentry, config);
             }
             catch (Exception e)
             {

@@ -19,9 +19,13 @@ namespace Mms_Metaverse.Config
         public Dictionary<string, ConnectorConfig> ConnectorsByName = new Dictionary<string, ConnectorConfig>(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, ConnectorConfig> ConnectorsByConnectorName = new Dictionary<string, ConnectorConfig>(StringComparer.OrdinalIgnoreCase);
 
+        // Somewhat Legacy
         public List<ConverterBase> AttributeConverters = new List<ConverterBase>();
         public Dictionary<string, ConverterBase> ConverterImportByAttribute = new Dictionary<string, ConverterBase>(StringComparer.OrdinalIgnoreCase);
         public Dictionary<string, ConverterBase> ConverterExportByAttribute = new Dictionary<string, ConverterBase>(StringComparer.OrdinalIgnoreCase);
+
+        // The new mapping
+        public Dictionary<string, Dictionary<Direction, Dictionary<string, ConverterBase>>> ConvertersByConnectorName = new Dictionary<string, Dictionary<Direction, Dictionary<string, ConverterBase>>>(StringComparer.OrdinalIgnoreCase);
 
         // constructor
         public SolutionConfiguration()
@@ -49,6 +53,12 @@ namespace Mms_Metaverse.Config
                 Connectors.Add(organization);
                 ConnectorsByName[organization.Name] = organization;
                 ConnectorsByConnectorName[organization.Connector] = organization;
+
+                // Create Configuration Containers
+                ConvertersByConnectorName[organization.Connector] = new Dictionary<Direction, Dictionary<string, ConverterBase>>();
+                ConvertersByConnectorName[organization.Connector][Direction.Import] = new Dictionary<string, ConverterBase>(StringComparer.OrdinalIgnoreCase);
+                ConvertersByConnectorName[organization.Connector][Direction.Export] = new Dictionary<string, ConverterBase>(StringComparer.OrdinalIgnoreCase);
+
                 if (organization.Target)
                     Targets.Add(organization);
             }
