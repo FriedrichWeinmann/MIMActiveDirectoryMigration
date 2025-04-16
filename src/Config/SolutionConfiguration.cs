@@ -100,6 +100,7 @@ namespace Mms_Metaverse.Config
                 ConverterImportByAttribute[converter.Attribute] = converter;
             else
                 ConverterExportByAttribute[converter.Attribute] = converter;
+            ConvertersByConnectorName[converter.Connector][Direction][converter.Attribute] = converter;
         }
     }
 }
